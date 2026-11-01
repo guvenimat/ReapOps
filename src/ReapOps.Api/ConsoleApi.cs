@@ -14,8 +14,11 @@ public sealed record IncidentListView(IReadOnlyList<IncidentSummary> Incidents);
 
 public sealed class SeverityConverter() : JsonStringEnumConverter<Severity>(System.Text.Json.JsonNamingPolicy.SnakeCaseLower);
 public sealed class StatusConverter() : JsonStringEnumConverter<IncidentStatus>(System.Text.Json.JsonNamingPolicy.SnakeCaseLower);
+public sealed class ConfidenceConverter() : JsonStringEnumConverter<Domain.Agent.Confidence>(System.Text.Json.JsonNamingPolicy.SnakeCaseLower);
+public sealed class DiagnosisStatusConverter() : JsonStringEnumConverter<Domain.Agent.DiagnosisStatus>(System.Text.Json.JsonNamingPolicy.SnakeCaseLower);
+public sealed class AgentModeConverter() : JsonStringEnumConverter<Domain.Agent.AgentMode>(System.Text.Json.JsonNamingPolicy.SnakeCaseLower);
 
-[JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.SnakeCaseLower, Converters = [typeof(SeverityConverter), typeof(StatusConverter)])]
+[JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.SnakeCaseLower, Converters = [typeof(SeverityConverter), typeof(StatusConverter), typeof(ConfidenceConverter), typeof(DiagnosisStatusConverter), typeof(AgentModeConverter)])]
 [JsonSerializable(typeof(LoginRequest))]
 [JsonSerializable(typeof(OperatorView))]
 [JsonSerializable(typeof(ErrorView))]

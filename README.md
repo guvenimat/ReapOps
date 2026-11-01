@@ -17,7 +17,7 @@ Read the [specification](docs/spec.md) and the [decision records](docs/adr).
 |---|---|
 | 1. Kubernetes foundation (the watched system on k3d with Helm, HPA, quotas, Kyverno, Argo CD) | done, in [ReapSeek](https://github.com/guvenimat/ReapSeek/tree/main/deploy/k8s) |
 | 2. Detect and notify: SLO burn rates, workload rules, incidents, email, console, no actions | **done** |
-| 3. Read-only agent: diagnosis in shadow mode, evaluation set | next |
+| 3. Read-only agent: diagnosis in shadow mode, evaluation set | agent core, tools, policy and eval set done; model adapter next |
 | 4. Capacity actions: `CapacityOverride` CRD and controller, approvals, verification | planned |
 | 5. Code fixes: pull requests, canary deploys, rollback | planned |
 
@@ -43,6 +43,27 @@ Read the [specification](docs/spec.md) and the [decision records](docs/adr).
 Tested against ReapSeek on a local cluster by stopping its search engine under load: the availability SLO incident opened as a
 warning, escalated to critical within four minutes as the 30-minute window caught up, a latency SLO warning followed from the
 timeouts, and an earlier "cannot read metrics" incident resolved itself once Prometheus had been reachable for ten minutes.
+
+## The diagnosis agent
+
+When an incident opens or escalates, the agent gets a brief (the detection evidence) and three read-only tools: `query_metrics`
+(PromQL now or in the past), `workload_status` (autoscalers and pod states of a watched namespace) and `incident_history`. It
+submits one structured diagnosis: summary, root cause, confidence, evidence claims that cite the tool calls they come from, the
+hypotheses it ruled out, and at most three options from the action catalog.
+
+Guardrails are code, not prompt text:
+
+- Tool output is redacted (passwords, tokens, keys, emails, phone and card numbers) and wrapped as `<tool_output>` data.
+- `DiagnosisPolicy` drops options outside the catalog or with unknown parameters, drops claims that cite no tool call from the
+  run, and lowers confidence when nothing is grounded. A low-confidence diagnosis is escalated rather than presented as an answer.
+- Step and token budgets end a wandering run. Architecture tests check that no agent tool depends on a write port.
+- New behaviour starts in **shadow mode**: diagnoses are stored and visible in the console, labelled as not reviewed, and never
+  sent in notifications.
+
+The evaluation set in [`eval/cases`](eval/cases) replays recorded tool outputs for four situations where the obvious answer is
+wrong in some of them: a search engine outage (scaling would not help), a bot flood (traffic up, orders flat), real demand on a
+campaign day (here scaling is right), and a memory leak after a deploy. `ReapOps.Worker eval eval/cases` scores the first option,
+forbidden options, root-cause terms and grounding per case.
 
 ## Architecture
 

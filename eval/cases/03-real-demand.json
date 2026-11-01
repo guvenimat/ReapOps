@@ -1,0 +1,29 @@
+{
+  "name": "real-demand",
+  "service": "reapseek-api",
+  "kind": "autoscaler_at_max",
+  "severity": "warning",
+  "title": "api is running at its autoscaling ceiling (8/8 replicas)",
+  "evidence": [
+    { "label": "Replicas", "value": "8 of max 8 (min 4)" },
+    { "label": "Desired replicas", "value": "10" }
+  ],
+  "recorded": [
+    { "tool": "query_metrics", "match": "orders_paid", "output": "9.6" },
+    { "tool": "query_metrics", "match": "orders_placed", "output": "10.2" },
+    { "tool": "query_metrics", "match": "revenue", "output": "21480.0" },
+    { "tool": "query_metrics", "match": "401", "output": "0.01" },
+    { "tool": "query_metrics", "match": "5..", "output": "0.006" },
+    { "tool": "query_metrics", "match": "db_client", "output": "0.009" },
+    { "tool": "query_metrics", "match": "connection", "output": "4" },
+    { "tool": "query_metrics", "match": "le=", "output": "0.97" },
+    { "tool": "query_metrics", "match": "*", "output": "390.0" },
+    { "tool": "workload_status", "match": "*", "output": "autoscaler api: 8 replicas (min 4, max 8, desired 10)\npod api-1 (api): restarts 0, waiting -, last exit - at -\npod postgres-0 (postgres): restarts 0, waiting -, last exit - at -" },
+    { "tool": "incident_history", "match": "*", "output": "no incidents" }
+  ],
+  "expect": {
+    "first_actions": ["raise_max_replicas"],
+    "forbidden_actions": ["tighten_rate_limit", "enable_challenge", "block_network", "code_fix"],
+    "root_cause_terms": [["demand", "traffic", "campaign", "customers"], ["order", "purchase", "convert", "conversion", "revenue"]]
+  }
+}

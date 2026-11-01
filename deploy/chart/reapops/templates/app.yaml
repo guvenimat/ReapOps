@@ -73,6 +73,8 @@ spec:
               value: {{ .Values.smtp.from }}
             - name: Notifications__To
               value: {{ .Values.notifyTo }}
+            - name: Agent__Mode
+              value: {{ .Values.agent.mode }}
           livenessProbe:
             exec:
               command: ["./ReapOps.Worker", "health", "heartbeat", "180"]

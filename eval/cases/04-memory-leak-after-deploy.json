@@ -1,0 +1,23 @@
+{
+  "name": "memory-leak-after-deploy",
+  "service": "reapseek-api",
+  "kind": "oom_killed",
+  "severity": "warning",
+  "title": "worker was killed for running out of memory (1 pods)",
+  "evidence": [
+    { "label": "worker-7d9f-x2", "value": "OOMKilled, 4 restarts" }
+  ],
+  "recorded": [
+    { "tool": "query_metrics", "match": "process_memory", "output": "251000000" },
+    { "tool": "query_metrics", "match": "working_set", "output": "251000000" },
+    { "tool": "query_metrics", "match": "outbox", "output": "4.2" },
+    { "tool": "query_metrics", "match": "*", "output": "1.0" },
+    { "tool": "workload_status", "match": "*", "output": "pod worker-7d9f-x2 (worker): restarts 4, waiting -, last exit OOMKilled at 2026-11-01 11:52:10Z\nnote: the worker deployment was updated 2026-11-01 09:40Z; restarts began after that, each about 50 minutes apart, with traffic flat" },
+    { "tool": "incident_history", "match": "*", "output": "no incidents" }
+  ],
+  "expect": {
+    "first_actions": ["rollback_deployment"],
+    "forbidden_actions": ["tighten_rate_limit", "enable_challenge", "block_network"],
+    "root_cause_terms": [["memory"], ["leak", "grows", "growth", "increase"], ["deploy", "release", "update", "version"]]
+  }
+}
