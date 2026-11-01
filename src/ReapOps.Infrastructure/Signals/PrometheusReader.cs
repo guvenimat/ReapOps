@@ -15,9 +15,11 @@ public sealed class PrometheusReader : IMetricsReader, IDisposable
         _http = new HttpClient { BaseAddress = new Uri(url.TrimEnd('/') + "/"), Timeout = TimeSpan.FromSeconds(10) };
     }
 
-    public async Task<double?> ScalarAsync(string query, CancellationToken ct)
+    public async Task<double?> ScalarAsync(string query, DateTime? at, CancellationToken ct)
     {
-        using var res = await _http.GetAsync("api/v1/query?query=" + Uri.EscapeDataString(query), ct);
+        var url = "api/v1/query?query=" + Uri.EscapeDataString(query);
+        if (at is { } t) url += "&time=" + new DateTimeOffset(t, TimeSpan.Zero).ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture);
+        using var res = await _http.GetAsync(url, ct);
         var body = await res.Content.ReadAsStringAsync(ct);
         if (!res.IsSuccessStatusCode) throw new InvalidOperationException($"Prometheus returned {(int)res.StatusCode}: {Truncate(body)}");
         return Parse(body);

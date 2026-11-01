@@ -89,9 +89,14 @@ public sealed class KubernetesReader : IClusterReader, IDisposable
             {
                 string? waiting = c.TryGetProperty("state", out var state) && state.TryGetProperty("waiting", out var w) && w.TryGetProperty("reason", out var wr)
                     ? wr.GetString() : null;
-                string? terminated = c.TryGetProperty("lastState", out var last) && last.TryGetProperty("terminated", out var t) && t.TryGetProperty("reason", out var tr)
-                    ? tr.GetString() : null;
-                list.Add(new PodState(name, workload, waiting, terminated, Int(c, "restartCount")));
+                string? terminated = null;
+                DateTime? terminatedAt = null;
+                if (c.TryGetProperty("lastState", out var last) && last.TryGetProperty("terminated", out var t))
+                {
+                    terminated = t.TryGetProperty("reason", out var tr) ? tr.GetString() : null;
+                    terminatedAt = t.TryGetProperty("finishedAt", out var fa) && fa.TryGetDateTime(out var f) ? f.ToUniversalTime() : null;
+                }
+                list.Add(new PodState(name, workload, waiting, terminated, Int(c, "restartCount"), terminatedAt));
             }
         }
         return list;

@@ -15,9 +15,11 @@ public class DetectionTests
     {
         public double Ratio { get; set; }
         public bool Down { get; set; }
+        public Func<string, DateTime?, double?>? Series { get; set; }
 
-        public Task<double?> ScalarAsync(string query, CancellationToken ct) =>
-            Down ? throw new HttpRequestException("connection refused") : Task.FromResult<double?>(Ratio);
+        public Task<double?> ScalarAsync(string query, DateTime? at, CancellationToken ct) =>
+            Down ? throw new HttpRequestException("connection refused")
+            : Task.FromResult(Series is not null && query.StartsWith("orders", StringComparison.Ordinal) ? Series(query, at) : Ratio);
     }
 
     sealed class FakeCluster : IClusterReader
@@ -145,6 +147,23 @@ public class DetectionTests
 
         Assert.Empty(_notifier.Sent);
         Assert.Contains(_store.Notifications, n => n.Decision == NotifyDecision.Maintenance);
+    }
+
+    [Fact]
+    public async Task Orders_stopping_at_a_busy_hour_opens_an_anomaly_incident()
+    {
+        var now = _clock.UtcNow;
+        _metrics.Series = (_, at) => at is null ? 2 : 40 + (now - at.Value).Days;
+        var detector = new DetectIncidents(_metrics, _cluster, _store, _store, _notifier, _clock, new MonitoringOptions
+        {
+            Services = [new MonitoredService { Name = "shop", Anomalies = [new AnomalyDefinition { Name = "orders", Query = "orders_per_minute", Direction = "down" }] }],
+        });
+        await detector.RunAsync(CancellationToken.None);
+
+        var incident = Assert.Single(_store.Incidents.Values);
+        Assert.Equal("anomaly:orders", incident.Fingerprint.Kind);
+        Assert.Contains("below its usual level", incident.Title);
+        Assert.Contains(incident.Evidence, e => e.Value == "44");
     }
 
     [Fact]

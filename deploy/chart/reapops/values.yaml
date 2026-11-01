@@ -34,6 +34,13 @@ monitoring:
           ErrorRatioQuery: >-
             1 - sum(rate(http_server_request_duration_seconds_bucket{service_name="reapseek-api",le="0.5",http_route!~"/healthz|/livez"}[{window}]))
             / sum(rate(http_server_request_duration_seconds_count{service_name="reapseek-api",http_route!~"/healthz|/livez"}[{window}]))
+      Anomalies:
+        - Name: request-rate
+          Direction: both
+          Query: sum(rate(http_server_request_duration_seconds_count{service_name="reapseek-api",http_route!~"/healthz|/livez"}[10m]))
+        - Name: paid-orders-per-minute
+          Direction: down
+          Query: (sum(rate(reapseek_orders_paid_total[30m])) or vector(0)) * 60
 
 api:
   replicas: 1
