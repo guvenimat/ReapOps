@@ -1,0 +1,54 @@
+image:
+  tag: local
+  pullPolicy: IfNotPresent
+
+secretName: reapops-secrets
+host: ops.localhost
+publicPort: 8080
+
+prometheus:
+  url: http://lgtm.reapseek.svc.cluster.local:9090
+
+smtp:
+  host: mailpit.reapseek.svc.cluster.local
+  port: 1025
+  from: reapops@reapops.local
+notifyTo: ops@example.com
+
+watchNamespaces:
+  - reapseek
+
+monitoring:
+  IntervalSeconds: 30
+  Services:
+    - Name: reapseek-api
+      Namespace: reapseek
+      Slos:
+        - Name: availability
+          Objective: 0.995
+          ErrorRatioQuery: >-
+            (sum(rate(http_server_request_duration_seconds_count{service_name="reapseek-api",http_response_status_code=~"5..",http_route!~"/healthz|/livez"}[{window}])) or vector(0))
+            / sum(rate(http_server_request_duration_seconds_count{service_name="reapseek-api",http_route!~"/healthz|/livez"}[{window}]))
+        - Name: latency-500ms
+          Objective: 0.99
+          ErrorRatioQuery: >-
+            1 - sum(rate(http_server_request_duration_seconds_bucket{service_name="reapseek-api",le="0.5",http_route!~"/healthz|/livez"}[{window}]))
+            / sum(rate(http_server_request_duration_seconds_count{service_name="reapseek-api",http_route!~"/healthz|/livez"}[{window}]))
+
+api:
+  replicas: 1
+  resources:
+    requests: { cpu: 50m, memory: 64Mi }
+    limits: { cpu: 500m, memory: 192Mi }
+
+worker:
+  resources:
+    requests: { cpu: 50m, memory: 64Mi }
+    limits: { cpu: 500m, memory: 192Mi }
+
+postgres:
+  image: postgres:17
+  storage: 1Gi
+  resources:
+    requests: { cpu: 50m, memory: 128Mi }
+    limits: { cpu: "1", memory: 512Mi }
