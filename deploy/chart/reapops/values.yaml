@@ -17,6 +17,7 @@ notifyTo: ops@example.com
 
 agent:
   mode: shadow
+  model: gemini-3.5-flash-lite
 
 watchNamespaces:
   - reapseek

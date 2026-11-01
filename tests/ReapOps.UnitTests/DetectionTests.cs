@@ -20,6 +20,8 @@ public class DetectionTests
         public Task<double?> ScalarAsync(string query, DateTime? at, CancellationToken ct) =>
             Down ? throw new HttpRequestException("connection refused")
             : Task.FromResult(Series is not null && query.StartsWith("orders", StringComparison.Ordinal) ? Series(query, at) : Ratio);
+
+        public Task<IReadOnlyList<string>> MetricNamesAsync(CancellationToken ct) => Task.FromResult<IReadOnlyList<string>>(["errors"]);
     }
 
     sealed class FakeCluster : IClusterReader

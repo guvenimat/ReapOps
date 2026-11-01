@@ -6,7 +6,7 @@ public sealed record ToolParameter(string Name, string Description, bool Require
 
 public sealed record ToolSpec(string Name, string Description, IReadOnlyList<ToolParameter> Parameters);
 
-public sealed record ToolCall(string Id, string Name, IReadOnlyDictionary<string, string> Arguments);
+public sealed record ToolCall(string Id, string Name, IReadOnlyDictionary<string, string> Arguments, string? Opaque = null);
 
 public sealed record ToolOutcome(string CallId, string Content, bool IsError);
 
@@ -48,7 +48,7 @@ public interface IAgentTool
 public sealed class AgentOptions
 {
     public string Mode { get; set; } = "shadow";
-    public int MaxSteps { get; set; } = 8;
+    public int MaxSteps { get; set; } = 10;
     public int MaxTokens { get; set; } = 80_000;
 
     public AgentMode ParsedMode => Mode.ToLowerInvariant() switch

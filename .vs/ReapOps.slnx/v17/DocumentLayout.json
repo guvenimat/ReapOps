@@ -1,0 +1,88 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\guven\\OneDrive\\Masa\u00FCst\u00FC\\projects\\ReapOps\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{7C7B2797-1AE8-E68D-282F-56261FD797AC}|src\\ReapOps.Api\\ReapOps.Api.csproj|c:\\users\\guven\\onedrive\\masa\u00FCst\u00FC\\projects\\reapops\\src\\reapops.api\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{7C7B2797-1AE8-E68D-282F-56261FD797AC}|src\\ReapOps.Api\\ReapOps.Api.csproj|solutionrelative:src\\reapops.api\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7C7B2797-1AE8-E68D-282F-56261FD797AC}|src\\ReapOps.Api\\ReapOps.Api.csproj|c:\\users\\guven\\onedrive\\masa\u00FCst\u00FC\\projects\\reapops\\src\\reapops.api\\operatorsessions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7C7B2797-1AE8-E68D-282F-56261FD797AC}|src\\ReapOps.Api\\ReapOps.Api.csproj|solutionrelative:src\\reapops.api\\operatorsessions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7C7B2797-1AE8-E68D-282F-56261FD797AC}|src\\ReapOps.Api\\ReapOps.Api.csproj|c:\\users\\guven\\onedrive\\masa\u00FCst\u00FC\\projects\\reapops\\src\\reapops.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7C7B2797-1AE8-E68D-282F-56261FD797AC}|src\\ReapOps.Api\\ReapOps.Api.csproj|solutionrelative:src\\reapops.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7C7B2797-1AE8-E68D-282F-56261FD797AC}|src\\ReapOps.Api\\ReapOps.Api.csproj|c:\\users\\guven\\onedrive\\masa\u00FCst\u00FC\\projects\\reapops\\src\\reapops.api\\consoleapi.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7C7B2797-1AE8-E68D-282F-56261FD797AC}|src\\ReapOps.Api\\ReapOps.Api.csproj|solutionrelative:src\\reapops.api\\consoleapi.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "launchSettings.json",
+              "DocumentMoniker": "C:\\Users\\guven\\OneDrive\\Masa\u00FCst\u00FC\\projects\\ReapOps\\src\\ReapOps.Api\\Properties\\launchSettings.json",
+              "RelativeDocumentMoniker": "src\\ReapOps.Api\\Properties\\launchSettings.json",
+              "ToolTip": "C:\\Users\\guven\\OneDrive\\Masa\u00FCst\u00FC\\projects\\ReapOps\\src\\ReapOps.Api\\Properties\\launchSettings.json",
+              "RelativeToolTip": "src\\ReapOps.Api\\Properties\\launchSettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-11-01T12:39:08.559Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "OperatorSessions.cs",
+              "DocumentMoniker": "C:\\Users\\guven\\OneDrive\\Masa\u00FCst\u00FC\\projects\\ReapOps\\src\\ReapOps.Api\\OperatorSessions.cs",
+              "RelativeDocumentMoniker": "src\\ReapOps.Api\\OperatorSessions.cs",
+              "ToolTip": "C:\\Users\\guven\\OneDrive\\Masa\u00FCst\u00FC\\projects\\ReapOps\\src\\ReapOps.Api\\OperatorSessions.cs",
+              "RelativeToolTip": "src\\ReapOps.Api\\OperatorSessions.cs",
+              "ViewState": "AgIAABIAAAAAAAAAAAAowAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-11-01T12:38:40.598Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\guven\\OneDrive\\Masa\u00FCst\u00FC\\projects\\ReapOps\\src\\ReapOps.Api\\Program.cs",
+              "RelativeDocumentMoniker": "src\\ReapOps.Api\\Program.cs",
+              "ToolTip": "C:\\Users\\guven\\OneDrive\\Masa\u00FCst\u00FC\\projects\\ReapOps\\src\\ReapOps.Api\\Program.cs",
+              "RelativeToolTip": "src\\ReapOps.Api\\Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-11-01T12:38:35.274Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "ConsoleApi.cs",
+              "DocumentMoniker": "C:\\Users\\guven\\OneDrive\\Masa\u00FCst\u00FC\\projects\\ReapOps\\src\\ReapOps.Api\\ConsoleApi.cs",
+              "RelativeDocumentMoniker": "src\\ReapOps.Api\\ConsoleApi.cs",
+              "ToolTip": "C:\\Users\\guven\\OneDrive\\Masa\u00FCst\u00FC\\projects\\ReapOps\\src\\ReapOps.Api\\ConsoleApi.cs",
+              "RelativeToolTip": "src\\ReapOps.Api\\ConsoleApi.cs",
+              "ViewState": "AgIAACwAAAAAAAAAAAAswAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-11-01T12:38:31.799Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
