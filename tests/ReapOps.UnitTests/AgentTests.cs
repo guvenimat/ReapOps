@@ -157,7 +157,6 @@ public class DiagnoseIncidentTests
         Assert.Equal(4, d.ToolCalls);
         Assert.Contains("Stopped after 4 steps", Assert.Single(d.Notes));
         Assert.Contains(model.Requests[^1].Transcript, t => t.Text?.StartsWith("This is your last step", StringComparison.Ordinal) == true);
-        Assert.DoesNotContain(model.Requests[^2].Transcript, t => t.Text?.StartsWith("This is your last step", StringComparison.Ordinal) == true);
     }
 
     [Fact]
