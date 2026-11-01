@@ -6,7 +6,7 @@ namespace ReapOps.Application.Diagnosis;
 
 public sealed class DiagnoseIncident(IDiagnosisModel model, IEnumerable<IAgentTool> tools, IDiagnosisStore store, IClock clock, AgentOptions options)
 {
-    public const string PromptVersion = "2026-11-01.2";
+    public const string PromptVersion = "2026-11-01.3";
 
     public const string SystemPrompt = """
         You are the diagnosis agent of ReapOps, an operations control plane for Kubernetes services.
@@ -40,6 +40,8 @@ public sealed class DiagnoseIncident(IDiagnosisModel model, IEnumerable<IAgentTo
 
         for (var step = 0; step < options.MaxSteps; step++)
         {
+            if (step == options.MaxSteps - 1)
+                transcript.Add(AgentTurn.Brief("This is your last step. Call submit_diagnosis now with what you have; use low confidence if the evidence is incomplete."));
             var reply = await model.NextAsync(new ModelRequest(SystemPrompt, transcript, toolList.Select(t => t.Spec).ToList(), ActionCatalog.All), ct);
             input += reply.InputTokens;
             output += reply.OutputTokens;
