@@ -24,7 +24,7 @@ public sealed class OpenAiCompatibleModel : IDiagnosisModel, IDisposable
         _log = log;
         _model = cfg["Llm:Model"] ?? "gemini-3.5-flash";
         var baseUrl = cfg["Llm:BaseUrl"]!.TrimEnd('/') + "/";
-        _http = new HttpClient { BaseAddress = new Uri(baseUrl), Timeout = TimeSpan.FromSeconds(120) };
+        _http = new HttpClient { BaseAddress = new Uri(baseUrl), Timeout = TimeSpan.FromSeconds(int.TryParse(cfg["Llm:TimeoutSeconds"], out var s) ? s : 120) };
         _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", cfg["Llm:ApiKey"]);
         Name = $"{_model} ({_http.BaseAddress.Host})";
     }
