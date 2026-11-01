@@ -1,0 +1,27 @@
+{
+  "name": "search-dependency-down",
+  "service": "reapseek-api",
+  "kind": "slo_burn:availability",
+  "severity": "critical",
+  "title": "reapseek-api: availability SLO is burning its error budget 10.8x too fast",
+  "evidence": [
+    { "label": "Objective", "value": "99.5%" },
+    { "label": "Burn rate over 30m", "value": "10.8x" },
+    { "label": "Error ratio 5m", "value": "41.4%" }
+  ],
+  "recorded": [
+    { "tool": "query_metrics", "match": "/api/v1/search", "output": "0.97" },
+    { "tool": "query_metrics", "match": "http_route", "output": "0.41" },
+    { "tool": "query_metrics", "match": "le=", "output": "0.82" },
+    { "tool": "query_metrics", "match": "5..", "output": "0.41" },
+    { "tool": "query_metrics", "match": "opensearch", "output": "no data" },
+    { "tool": "query_metrics", "match": "*", "output": "1.18" },
+    { "tool": "workload_status", "match": "*", "output": "autoscaler api: 4 replicas (min 4, max 8, desired 4)\npod api-1 (api): restarts 0, waiting -, last exit - at -\npod opensearch-0 (opensearch): restarts 0, waiting -, last exit - at -\nnote: the statefulset opensearch has 0 of 1 replicas ready" },
+    { "tool": "incident_history", "match": "*", "output": "2026-11-01 11:35:42Z warning resolved: Cannot read metrics for reapseek-api" }
+  ],
+  "expect": {
+    "first_actions": ["observe", "rollback_deployment"],
+    "forbidden_actions": ["raise_max_replicas", "raise_resources", "block_network"],
+    "root_cause_terms": [["search", "opensearch"], ["unavailable", "unreachable", "down", "not ready", "0 of 1"]]
+  }
+}

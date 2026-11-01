@@ -15,6 +15,9 @@ smtp:
   from: reapops@reapops.local
 notifyTo: ops@example.com
 
+agent:
+  mode: shadow
+
 watchNamespaces:
   - reapseek
 

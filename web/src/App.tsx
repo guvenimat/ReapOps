@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
-import { api, ApiError, type IncidentDetail, type IncidentSummary, type Status } from './api'
+import { api, ApiError, type Diagnosis, type IncidentDetail, type IncidentSummary, type Status } from './api'
 
 function useHash() {
   const [hash, setHash] = useState(location.hash)
@@ -197,8 +197,52 @@ function Detail({ id }: { id: string }) {
           </ol>
         </section>
       </div>
-      <p className="muted small">ReapOps only detects and notifies in this release. Diagnoses and proposed fixes come with the agent.</p>
+      {d.diagnoses.length > 0 ? d.diagnoses.map((x) => <DiagnosisCard key={x.id} d={x} />) : (
+        <p className="muted small">No diagnosis yet. The agent diagnoses new and escalated incidents when it is enabled.</p>
+      )}
+      <p className="muted small">ReapOps does not change anything in this release; options are suggestions only.</p>
     </div>
+  )
+}
+
+function DiagnosisCard({ d }: { d: Diagnosis }) {
+  return (
+    <section className="card diagnosis" data-testid="diagnosis">
+      <div className="row">
+        <h3>Diagnosis</h3>
+        {d.mode === 'shadow' && <span className="status">Shadow, not reviewed</span>}
+        <span className={`conf ${d.confidence}`}>{d.confidence} confidence</span>
+        <span className="muted small">{d.status} · {d.model} · prompt {d.prompt_version} · {d.tool_calls} tool calls · {d.input_tokens + d.output_tokens} tokens · {time(d.created_at)}</span>
+      </div>
+      {d.summary && <p className="lead">{d.summary}</p>}
+      {d.root_cause && <p><strong>Root cause:</strong> {d.root_cause}</p>}
+      {d.evidence.length > 0 && (
+        <>
+          <h4>Evidence</h4>
+          <ul>{d.evidence.map((e, n) => <li key={n}>{e.statement} <code>{e.sources.join(', ')}</code></li>)}</ul>
+        </>
+      )}
+      {d.alternatives.length > 0 && (
+        <>
+          <h4>Ruled out</h4>
+          <ul>{d.alternatives.map((a, n) => <li key={n}><strong>{a.hypothesis}</strong>: {a.why}</li>)}</ul>
+        </>
+      )}
+      {d.options.length > 0 && (
+        <>
+          <h4>Options</h4>
+          <ol className="options">
+            {d.options.map((o, n) => (
+              <li key={n}>
+                <code>{o.action_id}</code>{Object.keys(o.parameters).length > 0 && <span className="muted"> {Object.entries(o.parameters).map(([k, v]) => `${k}=${v}`).join(', ')}</span>}
+                <div>{o.rationale}</div>
+              </li>
+            ))}
+          </ol>
+        </>
+      )}
+      {d.notes.length > 0 && <ul className="notes">{d.notes.map((n, i) => <li key={i}>{n}</li>)}</ul>}
+    </section>
   )
 }
 

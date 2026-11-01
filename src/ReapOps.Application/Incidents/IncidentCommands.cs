@@ -5,9 +5,9 @@ using ReapOps.Domain.Incidents;
 namespace ReapOps.Application.Incidents;
 
 public sealed record IncidentDetail(IncidentSummary Summary, IReadOnlyList<Evidence> Evidence, string? AcknowledgedBy, DateTime? AcknowledgedAt,
-    string? Resolution, IReadOnlyList<TimelineEntry> Timeline);
+    string? Resolution, IReadOnlyList<TimelineEntry> Timeline, IReadOnlyList<Domain.Agent.Diagnosis> Diagnoses);
 
-public sealed class IncidentQueries(IIncidentReader reader)
+public sealed class IncidentQueries(IIncidentReader reader, Diagnosis.IDiagnosisReader diagnoses)
 {
     public Task<IReadOnlyList<IncidentSummary>> ListAsync(IncidentStatus? status, CancellationToken ct) => reader.ListAsync(status, 200, ct);
 
@@ -16,7 +16,7 @@ public sealed class IncidentQueries(IIncidentReader reader)
         if (await reader.GetAsync(id, ct) is not { } i) return null;
         return new IncidentDetail(
             new IncidentSummary(i.Id, i.Fingerprint.ToString(), i.Fingerprint.Service, i.Title, i.Severity, i.Status, i.OpenedAt, i.LastSeenAt, i.ResolvedAt),
-            i.Evidence, i.AcknowledgedBy, i.AcknowledgedAt, i.Resolution, await reader.TimelineAsync(id, ct));
+            i.Evidence, i.AcknowledgedBy, i.AcknowledgedAt, i.Resolution, await reader.TimelineAsync(id, ct), await diagnoses.ForIncidentAsync(id, ct));
     }
 }
 

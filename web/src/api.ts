@@ -7,9 +7,17 @@ export type IncidentSummary = {
 }
 export type Evidence = { label: string; value: string; query: string | null }
 export type TimelineEntry = { kind: string; detail: string; at: string }
+export type Diagnosis = {
+  id: string; status: 'completed' | 'escalated' | 'failed'; mode: 'off' | 'shadow' | 'visible'; model: string; prompt_version: string
+  summary: string; root_cause: string; confidence: 'low' | 'medium' | 'high'
+  evidence: { statement: string; sources: string[] }[]
+  alternatives: { hypothesis: string; why: string }[]
+  options: { action_id: string; parameters: Record<string, string>; rationale: string }[]
+  notes: string[]; tool_calls: number; input_tokens: number; output_tokens: number; created_at: string
+}
 export type IncidentDetail = {
   summary: IncidentSummary; evidence: Evidence[]; acknowledged_by: string | null; acknowledged_at: string | null
-  resolution: string | null; timeline: TimelineEntry[]
+  resolution: string | null; timeline: TimelineEntry[]; diagnoses: Diagnosis[]
 }
 
 export class ApiError extends Error {

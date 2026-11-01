@@ -101,3 +101,14 @@ code.query { display: block; margin-top: 4px; white-space: pre-wrap; word-break:
   th:nth-child(5), td:nth-child(5), th:nth-child(6), td:nth-child(6) { display: none; }
   .shell header { padding: 12px 16px; }
 }
+
+.diagnosis { padding: 18px; margin-top: 16px; display: grid; gap: 8px; }
+.diagnosis h3 { font-size: 14px; margin: 0 6px 0 0; }
+.diagnosis h4 { margin: 8px 0 2px; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.diagnosis ul, .diagnosis ol { margin: 0; padding-left: 18px; display: grid; gap: 4px; font-size: 14px; }
+.diagnosis .lead { font-size: 15px; margin: 4px 0; }
+.diagnosis .notes { color: var(--muted); font-size: 12px; }
+.conf { font-size: 11px; font-weight: 600; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; background: var(--surface-2); }
+.conf.high { color: var(--ok); }
+.conf.medium { color: var(--warning); }
+.conf.low { color: var(--critical); }
