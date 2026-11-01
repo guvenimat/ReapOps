@@ -1,6 +1,6 @@
 # ADR 0003: Three-tier scaling with layered hard caps
 
-Status: proposed
+Status: accepted (2026-11-01)
 
 ## Context
 

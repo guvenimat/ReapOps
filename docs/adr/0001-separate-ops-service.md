@@ -1,6 +1,6 @@
 # ADR 0001: A separate product that knows nothing about the systems it watches
 
-Status: proposed
+Status: accepted (2026-11-01)
 
 ## Context
 

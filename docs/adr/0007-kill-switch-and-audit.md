@@ -1,6 +1,6 @@
 # ADR 0007: Kill switch, audit and noise control
 
-Status: proposed
+Status: accepted (2026-11-01)
 
 ## Context
 

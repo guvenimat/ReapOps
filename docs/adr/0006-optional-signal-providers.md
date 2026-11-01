@@ -1,6 +1,6 @@
 # ADR 0006: Business signals are optional evidence
 
-Status: proposed
+Status: accepted (2026-11-01)
 
 ## Context
 
