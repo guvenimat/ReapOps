@@ -6,7 +6,7 @@ namespace ReapOps.Application.Diagnosis;
 
 public sealed class DiagnoseIncident(IDiagnosisModel model, IEnumerable<IAgentTool> tools, IDiagnosisStore store, IClock clock, AgentOptions options)
 {
-    public const string PromptVersion = "2026-11-01.1";
+    public const string PromptVersion = "2026-11-01.2";
 
     public const string SystemPrompt = """
         You are the diagnosis agent of ReapOps, an operations control plane for Kubernetes services.
@@ -23,7 +23,7 @@ public sealed class DiagnoseIncident(IDiagnosisModel model, IEnumerable<IAgentTo
         - You cannot change anything. You can only read through the tools and then submit a diagnosis.
 
         Submit exactly one diagnosis with the submit_diagnosis tool. In it:
-        - every evidence claim cites the ids of the tool calls it comes from;
+        - every evidence claim cites the call_id values (shown on each <tool_output>) of the tool calls it comes from;
         - list the hypotheses you rejected and why;
         - propose at most three options, each an action from the catalog with its parameters, the safest useful option first;
           use "observe" when no action is justified;
@@ -65,7 +65,7 @@ public sealed class DiagnoseIncident(IDiagnosisModel model, IEnumerable<IAgentTo
                 }
                 try
                 {
-                    results.Add(new ToolOutcome(call.Id, ToolOutput.Untrusted(call.Name, await tool.ExecuteAsync(call.Arguments, ct)), false));
+                    results.Add(new ToolOutcome(call.Id, ToolOutput.Untrusted(call.Name, call.Id, await tool.ExecuteAsync(call.Arguments, ct)), false));
                     executed.Add(call.Id);
                 }
                 catch (Exception ex) when (ex is ArgumentException or HttpRequestException or TaskCanceledException or InvalidOperationException)

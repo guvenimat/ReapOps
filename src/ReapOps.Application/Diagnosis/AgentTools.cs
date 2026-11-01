@@ -9,11 +9,11 @@ public static class ToolOutput
 {
     public const int MaxLength = 4000;
 
-    public static string Untrusted(string tool, string content)
+    public static string Untrusted(string tool, string callId, string content)
     {
         var text = Domain.Agent.Redactor.Redact(content);
         if (text.Length > MaxLength) text = text[..MaxLength] + "\n[truncated]";
-        return $"<tool_output tool=\"{tool}\">\n{text}\n</tool_output>";
+        return $"<tool_output tool=\"{tool}\" call_id=\"{callId}\">\n{text}\n</tool_output>";
     }
 
     public static string Arg(IReadOnlyDictionary<string, string> args, string name) =>
@@ -38,6 +38,26 @@ public sealed class QueryMetricsTool(IMetricsReader metrics, IClock clock) : IAg
             ? clock.UtcNow.AddMinutes(-Math.Min(minutes, 60 * 24 * 8)) : null;
         var value = await metrics.ScalarAsync(query, at, ct);
         return value is { } v ? v.ToString("0.######", CultureInfo.InvariantCulture) : "no data";
+    }
+}
+
+public sealed class ListMetricsTool(IMetricsReader metrics) : IAgentTool
+{
+    public const int MaxNames = 150;
+
+    public ToolSpec Spec => Definition;
+
+    public static readonly ToolSpec Definition = new("list_metrics",
+        "List the metric names that exist in Prometheus, optionally only those containing a word. Use it before writing a query so that you query metrics that exist.",
+        [new ToolParameter("contains", "Optional word that the metric name must contain, for example http, orders, memory or db", Required: false)]);
+
+    public async Task<string> ExecuteAsync(IReadOnlyDictionary<string, string> arguments, CancellationToken ct)
+    {
+        var names = await metrics.MetricNamesAsync(ct);
+        if (arguments.TryGetValue("contains", out var word) && !string.IsNullOrWhiteSpace(word))
+            names = names.Where(n => n.Contains(word.Trim(), StringComparison.OrdinalIgnoreCase)).ToList();
+        var shown = names.Take(MaxNames).ToList();
+        return shown.Count == 0 ? "no metrics" : string.Join("\n", shown) + (names.Count > shown.Count ? $"\n... {names.Count - shown.Count} more; narrow with contains" : "");
     }
 }
 

@@ -124,7 +124,7 @@ public class DiagnoseIncidentTests
         Assert.Equal(2500, d.InputTokens);
         Assert.Same(d, Assert.Single(store.Saved));
         var results = model.Requests[1].Transcript.Last().Results;
-        Assert.StartsWith("<tool_output tool=\"query_metrics\">", Assert.Single(results).Content);
+        Assert.StartsWith("<tool_output tool=\"query_metrics\" call_id=\"c1\">", Assert.Single(results).Content);
         Assert.Contains("errors[1h]", model.Requests[0].Transcript[0].Text);
     }
 

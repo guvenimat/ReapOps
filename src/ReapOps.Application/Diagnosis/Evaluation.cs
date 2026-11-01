@@ -44,6 +44,7 @@ public sealed class EvaluateDiagnoses(IDiagnosisModel model, IClock clock, Agent
     public static readonly IReadOnlyList<ToolSpec> Tools =
     [
         QueryMetricsTool.Definition,
+        ListMetricsTool.Definition,
         WorkloadStatusTool.Definition,
         IncidentHistoryTool.Definition,
     ];
@@ -56,7 +57,14 @@ public sealed class EvaluateDiagnoses(IDiagnosisModel model, IClock clock, Agent
             var tools = Tools.Select(spec => (IAgentTool)new ReplayTool(spec, c.Recorded)).ToList();
             var diagnose = new DiagnoseIncident(model, tools, new DiscardStore(), clock, options);
             var incident = Incident.Open(Guid.CreateVersion7(clock.UtcNow), c.Incident, clock.UtcNow);
-            scores.Add(Score(c, await diagnose.RunAsync(incident, ct)));
+            try
+            {
+                scores.Add(Score(c, await diagnose.RunAsync(incident, ct)));
+            }
+            catch (Exception ex) when (ex is InvalidOperationException or HttpRequestException or TaskCanceledException)
+            {
+                scores.Add(new EvalScore(c.Name, false, false, false, false, DiagnosisStatus.Failed, 0, 0, 0, $"run failed: {ex.Message.Split('\n')[0]}"));
+            }
         }
         return new EvalReport(model.Name, DiagnoseIncident.PromptVersion, scores);
     }

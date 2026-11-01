@@ -46,6 +46,15 @@ public sealed class PrometheusReader : IMetricsReader, IDisposable
         return double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var v) && double.IsFinite(v) ? v : null;
     }
 
+    public async Task<IReadOnlyList<string>> MetricNamesAsync(CancellationToken ct)
+    {
+        using var res = await _http.GetAsync("api/v1/label/__name__/values", ct);
+        var body = await res.Content.ReadAsStringAsync(ct);
+        if (!res.IsSuccessStatusCode) throw new InvalidOperationException($"Prometheus returned {(int)res.StatusCode}: {Truncate(body)}");
+        using var doc = JsonDocument.Parse(body);
+        return doc.RootElement.GetProperty("data").EnumerateArray().Select(e => e.GetString()!).ToList();
+    }
+
     static string Truncate(string s) => s.Length > 300 ? s[..300] : s;
 
     public void Dispose() => _http.Dispose();

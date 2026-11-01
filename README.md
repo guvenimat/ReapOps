@@ -17,7 +17,7 @@ Read the [specification](docs/spec.md) and the [decision records](docs/adr).
 |---|---|
 | 1. Kubernetes foundation (the watched system on k3d with Helm, HPA, quotas, Kyverno, Argo CD) | done, in [ReapSeek](https://github.com/guvenimat/ReapSeek/tree/main/deploy/k8s) |
 | 2. Detect and notify: SLO burn rates, workload rules, incidents, email, console, no actions | **done** |
-| 3. Read-only agent: diagnosis in shadow mode, evaluation set | agent core, tools, policy and eval set done; model adapter next |
+| 3. Read-only agent: diagnosis in shadow mode, evaluation set | **running in shadow mode** (OpenAI-compatible adapter, Gemini); first score 1/4 |
 | 4. Capacity actions: `CapacityOverride` CRD and controller, approvals, verification | planned |
 | 5. Code fixes: pull requests, canary deploys, rollback | planned |
 
@@ -46,8 +46,9 @@ timeouts, and an earlier "cannot read metrics" incident resolved itself once Pro
 
 ## The diagnosis agent
 
-When an incident opens or escalates, the agent gets a brief (the detection evidence) and three read-only tools: `query_metrics`
-(PromQL now or in the past), `workload_status` (autoscalers and pod states of a watched namespace) and `incident_history`. It
+When an incident opens or escalates, the agent gets a brief (the detection evidence) and four read-only tools: `list_metrics`
+(which metrics exist), `query_metrics` (PromQL now or in the past), `workload_status` (autoscalers and pod states of a watched
+namespace) and `incident_history`. It
 submits one structured diagnosis: summary, root cause, confidence, evidence claims that cite the tool calls they come from, the
 hypotheses it ruled out, and at most three options from the action catalog.
 
@@ -64,6 +65,14 @@ The evaluation set in [`eval/cases`](eval/cases) replays recorded tool outputs f
 wrong in some of them: a search engine outage (scaling would not help), a bot flood (traffic up, orders flat), real demand on a
 campaign day (here scaling is right), and a memory leak after a deploy. `ReapOps.Worker eval eval/cases` scores the first option,
 forbidden options, root-cause terms and grounding per case.
+
+The model sits behind a provider-neutral port ([ADR 0009](docs/adr/0009-provider-neutral-model-port.md)); the first adapter speaks
+the OpenAI-compatible chat completions API, so Gemini, OpenAI, Groq, OpenRouter or a local server are a configuration change.
+
+| Model | Prompt | Passed | Notes |
+|---|---|---|---|
+| gemini-3.5-flash-lite | 2026-11-01.1 | 0/4 | no claim was grounded: tool call ids were not visible to the model (harness bug, fixed) |
+| gemini-3.5-flash-lite | 2026-11-01.2 | 1/4 | grounded everywhere; proposed more replicas during the bot flood and hedged on real demand |
 
 ## Architecture
 

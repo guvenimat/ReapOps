@@ -75,6 +75,20 @@ spec:
               value: {{ .Values.notifyTo }}
             - name: Agent__Mode
               value: {{ .Values.agent.mode }}
+            - name: Llm__Model
+              value: {{ .Values.agent.model }}
+            - name: Llm__ApiKey
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secretName }}
+                  key: LLM_API_KEY
+                  optional: true
+            - name: Llm__BaseUrl
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secretName }}
+                  key: LLM_BASE_URL
+                  optional: true
           livenessProbe:
             exec:
               command: ["./ReapOps.Worker", "health", "heartbeat", "180"]

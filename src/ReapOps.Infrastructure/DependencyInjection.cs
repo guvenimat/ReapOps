@@ -39,8 +39,10 @@ public static class DependencyInjection
     public static IServiceCollection AddReapOpsAgent(this IServiceCollection services)
     {
         services.AddSingleton<IDiagnosisStore>(sp => sp.GetRequiredService<DiagnosisRepository>());
-        services.AddSingleton<IDiagnosisModel, UnconfiguredModel>();
+        services.AddSingleton<IDiagnosisModel>(sp => OpenAiCompatibleModel.IsEnabled(sp.GetRequiredService<IConfiguration>())
+            ? ActivatorUtilities.CreateInstance<OpenAiCompatibleModel>(sp) : new UnconfiguredModel());
         services.AddSingleton<IAgentTool, QueryMetricsTool>();
+        services.AddSingleton<IAgentTool, ListMetricsTool>();
         services.AddSingleton<IAgentTool, WorkloadStatusTool>();
         services.AddSingleton<IAgentTool, IncidentHistoryTool>();
         services.AddSingleton<DiagnoseIncident>();
