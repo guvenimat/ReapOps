@@ -1,0 +1,5 @@
+**/bin/
+**/obj/
+**/node_modules/
+src/ReapOps.Api/wwwroot/
+.git/

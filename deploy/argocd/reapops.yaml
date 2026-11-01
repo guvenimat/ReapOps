@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: reapops
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/guvenimat/ReapOps.git
+    targetRevision: main
+    path: deploy/chart/reapops
+    helm:
+      releaseName: reapops
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: reapops
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

@@ -1,0 +1,29 @@
+FROM node:22-alpine AS web
+WORKDIR /web
+COPY web/package.json web/package-lock.json ./
+RUN npm ci
+COPY web/ ./
+RUN npx tsc --noEmit && npx vite build --outDir /wwwroot --emptyOutDir
+
+FROM mcr.microsoft.com/dotnet/sdk:10.0-noble-aot AS build
+WORKDIR /src
+COPY src/Directory.Build.props ./
+COPY src/ReapOps.Domain/ReapOps.Domain.csproj ReapOps.Domain/
+COPY src/ReapOps.Application/ReapOps.Application.csproj ReapOps.Application/
+COPY src/ReapOps.Infrastructure/ReapOps.Infrastructure.csproj ReapOps.Infrastructure/
+COPY src/ReapOps.Api/ReapOps.Api.csproj ReapOps.Api/
+RUN dotnet restore ReapOps.Api/ReapOps.Api.csproj -r linux-x64
+COPY src/ReapOps.Domain/ ReapOps.Domain/
+COPY src/ReapOps.Application/ ReapOps.Application/
+COPY src/ReapOps.Infrastructure/ ReapOps.Infrastructure/
+COPY src/ReapOps.Api/ ReapOps.Api/
+RUN dotnet publish ReapOps.Api/ReapOps.Api.csproj -c Release -r linux-x64 --no-restore -o /app
+
+FROM mcr.microsoft.com/dotnet/runtime-deps:10.0-noble
+WORKDIR /app
+COPY --from=build /app .
+COPY --from=web /wwwroot ./wwwroot
+ENV ASPNETCORE_URLS=http://+:8080
+USER app
+EXPOSE 8080
+ENTRYPOINT ["./ReapOps.Api"]

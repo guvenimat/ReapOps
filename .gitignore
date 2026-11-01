@@ -5,3 +5,4 @@ obj/
 node_modules/
 dist/
 .env
+src/ReapOps.Api/wwwroot/

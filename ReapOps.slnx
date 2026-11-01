@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/ReapOps.Domain/ReapOps.Domain.csproj" />
+    <Project Path="src/ReapOps.Application/ReapOps.Application.csproj" />
+    <Project Path="src/ReapOps.Infrastructure/ReapOps.Infrastructure.csproj" />
+    <Project Path="src/ReapOps.Api/ReapOps.Api.csproj" />
+    <Project Path="src/ReapOps.Worker/ReapOps.Worker.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/ReapOps.UnitTests/ReapOps.UnitTests.csproj" />
+  </Folder>
+</Solution>
