@@ -62,6 +62,10 @@ Deployables: `reapops-api` (approval API and UI backend), `reapops-worker` (coll
 `reapops-controller` (Kubernetes controller for `CapacityOverride`), `reapops-migrate` (database migrations, run as a Job),
 and a web UI. Everything runs in the `reapops` namespace.
 
+Code is organized in Clean Architecture layers ([ADR 0008](adr/0008-clean-architecture.md)): `ReapOps.Domain` (pure rules),
+`ReapOps.Application` (use cases and ports), `ReapOps.Infrastructure` (adapters) and thin hosts. Read and write ports are
+separate, and architecture tests ensure nothing on the diagnosis path can reach a write port.
+
 ## 4. Signals
 
 Signal providers implement one interface (`query(range) -> series | events`) and are configured per monitored service.
