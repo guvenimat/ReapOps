@@ -1,0 +1,7 @@
+CLAUDE.md
+ILERLEME.md
+bin/
+obj/
+node_modules/
+dist/
+.env
