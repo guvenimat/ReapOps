@@ -1,6 +1,6 @@
 # ADR 0002: Deterministic detection, LLM explanation
 
-Status: proposed
+Status: accepted (2026-11-01)
 
 ## Context
 

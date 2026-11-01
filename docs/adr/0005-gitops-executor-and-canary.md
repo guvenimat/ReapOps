@@ -1,6 +1,6 @@
 # ADR 0005: Changes go through Git; the agent has no write access
 
-Status: proposed
+Status: accepted (2026-11-01)
 
 ## Context
 

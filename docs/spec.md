@@ -4,7 +4,7 @@ ReapOps is an agentic operations control plane for Kubernetes. It watches a clus
 problems with deterministic rules and statistics, asks an LLM agent to explain them and propose fixes, and applies
 a fix only after a human approves it, through Git and the cluster's GitOps tooling.
 
-Status: draft for review. Decisions are recorded in [docs/adr](adr).
+Status: accepted (2026-11-01). Decisions are recorded in [docs/adr](adr).
 
 ## 1. Goals and non-goals
 
