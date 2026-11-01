@@ -1,5 +1,6 @@
 using System.Globalization;
 using ReapOps.Application.Ports;
+using ReapOps.Domain.Anomalies;
 using ReapOps.Domain.Common;
 using ReapOps.Domain.Incidents;
 using ReapOps.Domain.Slos;
@@ -39,12 +40,28 @@ public sealed class DetectIncidents(IMetricsReader metrics, IClusterReader clust
                 if (condition is not null) conditions.Add(condition);
             }
 
+            foreach (var anomaly in service.Anomalies)
+            {
+                var kind = $"anomaly:{anomaly.Name}";
+                var (condition, failure) = await EvaluateAnomalyAsync(service.Name, anomaly, now, ct);
+                if (failure is not null)
+                {
+                    failed = true;
+                    unavailable.Add($"{service.Name} metrics");
+                    conditions.Add(new Condition(new Fingerprint(service.Name, SignalUnavailable, "metrics"), Severity.Warning,
+                        $"Cannot read metrics for {service.Name}", [new Evidence("Error", failure)]));
+                    continue;
+                }
+                evaluated.Add((service.Name, kind));
+                if (condition is not null) conditions.Add(condition);
+            }
+
             if (service.Namespace is { Length: > 0 } ns)
             {
                 try
                 {
                     var snapshot = await cluster.SnapshotAsync(ns, ct);
-                    conditions.AddRange(WorkloadRules.Evaluate(service.Name, snapshot));
+                    conditions.AddRange(WorkloadRules.Evaluate(service.Name, snapshot, now));
                     foreach (var kind in new[] { "autoscaler_at_max", "crash_loop", "oom_killed", "restarts" }) evaluated.Add((service.Name, kind));
                 }
                 catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or InvalidOperationException)
@@ -114,7 +131,7 @@ public sealed class DetectIncidents(IMetricsReader metrics, IClusterReader clust
             double? ratio;
             try
             {
-                ratio = await metrics.ScalarAsync(PromWindow.Render(definition.ErrorRatioQuery, window), ct);
+                ratio = await metrics.ScalarAsync(PromWindow.Render(definition.ErrorRatioQuery, window), null, ct);
             }
             catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or InvalidOperationException)
             {
@@ -138,6 +155,42 @@ public sealed class DetectIncidents(IMetricsReader metrics, IClusterReader clust
         return (new Condition(new Fingerprint(service, $"slo_burn:{slo.Name}", slo.Name), alert.Severity,
             $"{service}: {slo.Name} SLO is burning its error budget {alert.ShortBurn:0.0}x too fast", evidence), null);
     }
+
+    async Task<(Condition? Condition, string? Failure)> EvaluateAnomalyAsync(string service, AnomalyDefinition definition, DateTime now, CancellationToken ct)
+    {
+        var rule = AnomalyRule.Create(definition.Name, definition.Direction.ToLowerInvariant() switch
+        {
+            "up" => Direction.Up,
+            "down" => Direction.Down,
+            _ => Direction.Both,
+        }, definition.Threshold, definition.MinRelativeChange, definition.MinHistory);
+        double? current;
+        var history = new List<double>();
+        try
+        {
+            current = await metrics.ScalarAsync(definition.Query, null, ct);
+            for (var day = 1; day <= definition.SeasonDays; day++)
+                if (await metrics.ScalarAsync(definition.Query, now.AddDays(-day), ct) is { } past) history.Add(past);
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or InvalidOperationException)
+        {
+            return (null, ex.Message);
+        }
+        if (current is not { } value) return (null, null);
+        var score = AnomalyDetector.Score(value, history);
+        if (AnomalyDetector.Judge(rule, score) != AnomalyVerdict.Anomalous) return (null, null);
+        var change = double.IsInfinity(score.RelativeChange) ? "from zero" : PromWindow.Percent(Math.Abs(score.RelativeChange));
+        var where = score.RelativeChange > 0 ? "above" : "below";
+        return (new Condition(new Fingerprint(service, $"anomaly:{rule.Name}", rule.Name), Severity.Warning,
+            $"{service}: {rule.Name} is {change} {where} its usual level for this time of day",
+            [
+                new Evidence("Now", Number(value), definition.Query),
+                new Evidence($"Usual (median of the same time over {score.History} days)", Number(score.Median)),
+                new Evidence("Robust score", score.Score.ToString("0.0", CultureInfo.InvariantCulture) + $" (threshold {rule.Threshold.ToString(CultureInfo.InvariantCulture)})"),
+            ]), null);
+    }
+
+    static string Number(double v) => v.ToString(Math.Abs(v) >= 100 ? "0" : "0.###", CultureInfo.InvariantCulture);
 
     static string Kind(IDomainEvent e) => e switch
     {

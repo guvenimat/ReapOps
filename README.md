@@ -25,8 +25,11 @@ Read the [specification](docs/spec.md) and the [decision records](docs/adr).
 
 - **SLO burn rates.** Each service declares SLOs with a PromQL error-ratio template; the worker evaluates multi-window burn rates
   (14.4x over 1 h and 5 min, 6x over 6 h and 30 min: critical; 3x over 1 day and 2 h: warning) every 30 seconds.
+- **Anomalies.** A metric is compared with the same time of day over the previous seven days: median, MAD-based robust score,
+  and a minimum real change (50% by default) so that statistically odd but harmless wiggles stay quiet. Nothing is judged until
+  a metric has five days of history. ReapSeek watches its request rate (both ways) and paid orders per minute (drops only).
 - **Workload rules.** From the Kubernetes API with a read-only service account: an autoscaler at its ceiling, crash loops,
-  OOM kills and repeated restarts.
+  and OOM kills or repeated restarts in the last 15 minutes.
 - **Incidents.** One open incident per fingerprint (service, kind, key). A worse reading escalates it; it resolves itself only after
   the condition has stayed clear for 10 minutes. If a signal source cannot be read, ReapOps opens an incident about that and keeps
   the incidents that depend on it open instead of resolving them blindly.

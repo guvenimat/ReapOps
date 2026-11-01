@@ -117,11 +117,21 @@ public class IncidentTests
 
 public class WorkloadRuleTests
 {
+    static readonly DateTime Now = new(2026, 11, 1, 12, 0, 0, DateTimeKind.Utc);
+
+    [Fact]
+    public void Old_restarts_are_history_and_recent_ones_are_an_incident()
+    {
+        WorkloadSnapshot Pod(DateTime at) => new([], [new PodState("api-1", "api", null, "Error", 5, at)]);
+        Assert.Empty(WorkloadRules.Evaluate("shop", Pod(Now.AddHours(-2)), Now));
+        Assert.Equal("restarts", Assert.Single(WorkloadRules.Evaluate("shop", Pod(Now.AddMinutes(-3)), Now)).Fingerprint.Kind);
+    }
+
     [Fact]
     public void An_autoscaler_at_its_ceiling_is_a_warning()
     {
         var snapshot = new WorkloadSnapshot([new AutoscalerState("api", 8, 4, 8, 8), new AutoscalerState("web", 2, 2, 6, 2)], []);
-        var c = Assert.Single(WorkloadRules.Evaluate("shop", snapshot));
+        var c = Assert.Single(WorkloadRules.Evaluate("shop", snapshot, DateTime.UtcNow));
         Assert.Equal("autoscaler_at_max", c.Fingerprint.Kind);
         Assert.Equal(Severity.Warning, c.Severity);
     }
@@ -133,10 +143,11 @@ public class WorkloadRuleTests
         [
             new PodState("api-1", "api", "CrashLoopBackOff", "Error", 5),
             new PodState("api-2", "api", "CrashLoopBackOff", "Error", 4),
-            new PodState("worker-1", "worker", null, "OOMKilled", 1),
+            new PodState("worker-1", "worker", null, "OOMKilled", 1, Now.AddMinutes(-2)),
             new PodState("web-1", "web", null, null, 0),
+            new PodState("old-1", "old", null, "Error", 9, Now.AddHours(-3)),
         ]);
-        var conditions = WorkloadRules.Evaluate("shop", snapshot).ToList();
+        var conditions = WorkloadRules.Evaluate("shop", snapshot, Now).ToList();
         var crash = Assert.Single(conditions, c => c.Fingerprint.Kind == "crash_loop");
         Assert.Equal(Severity.Critical, crash.Severity);
         Assert.Equal(2, crash.Evidence.Count);

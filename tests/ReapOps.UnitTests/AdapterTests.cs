@@ -27,11 +27,11 @@ public class AdapterTests
         var pods = KubernetesReader.ParsePods("""
             {"items":[
               {"metadata":{"name":"api-1","labels":{"app.kubernetes.io/name":"api"}},"status":{"containerStatuses":[
-                {"restartCount":4,"state":{"waiting":{"reason":"CrashLoopBackOff"}},"lastState":{"terminated":{"reason":"Error"}}}]}},
+                {"restartCount":4,"state":{"waiting":{"reason":"CrashLoopBackOff"}},"lastState":{"terminated":{"reason":"Error","finishedAt":"2026-11-01T11:58:00Z"}}}]}},
               {"metadata":{"name":"pending-1"},"status":{}}
             ]}
             """);
-        Assert.Equal(new Domain.Incidents.PodState("api-1", "api", "CrashLoopBackOff", "Error", 4), Assert.Single(pods));
+        Assert.Equal(new Domain.Incidents.PodState("api-1", "api", "CrashLoopBackOff", "Error", 4, new DateTime(2026, 11, 1, 11, 58, 0, DateTimeKind.Utc)), Assert.Single(pods));
     }
 
     [Theory]

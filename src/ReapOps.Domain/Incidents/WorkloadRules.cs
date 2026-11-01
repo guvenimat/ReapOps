@@ -4,15 +4,16 @@ namespace ReapOps.Domain.Incidents;
 
 public sealed record AutoscalerState(string Name, int Current, int Min, int Max, int Desired);
 
-public sealed record PodState(string Name, string Workload, string? WaitingReason, string? LastTerminationReason, int Restarts);
+public sealed record PodState(string Name, string Workload, string? WaitingReason, string? LastTerminationReason, int Restarts, DateTime? LastTerminatedAt = null);
 
 public sealed record WorkloadSnapshot(IReadOnlyList<AutoscalerState> Autoscalers, IReadOnlyList<PodState> Pods);
 
 public static class WorkloadRules
 {
     public const int RestartThreshold = 3;
+    public static readonly TimeSpan RecentCrash = TimeSpan.FromMinutes(15);
 
-    public static IEnumerable<Condition> Evaluate(string service, WorkloadSnapshot snapshot)
+    public static IEnumerable<Condition> Evaluate(string service, WorkloadSnapshot snapshot, DateTime now)
     {
         foreach (var hpa in snapshot.Autoscalers.Where(h => h.Max > 0 && h.Current >= h.Max && h.Desired >= h.Max))
             yield return new Condition(new Fingerprint(service, "autoscaler_at_max", hpa.Name), Severity.Warning,
@@ -30,13 +31,14 @@ public static class WorkloadRules
                     $"{group.Key} is crash looping ({crashing.Count} of {group.Count()} pods)",
                     crashing.Select(p => new Evidence(p.Name, $"CrashLoopBackOff, {p.Restarts} restarts, last exit: {p.LastTerminationReason ?? "unknown"}")).ToList());
 
-            var oom = group.Where(p => p.LastTerminationReason == "OOMKilled" && p.Restarts > 0).ToList();
+            bool Recent(PodState p) => p.LastTerminatedAt is { } at && now - at <= RecentCrash;
+            var oom = group.Where(p => p.LastTerminationReason == "OOMKilled" && Recent(p)).ToList();
             if (oom.Count > 0)
                 yield return new Condition(new Fingerprint(service, "oom_killed", group.Key), Severity.Warning,
                     $"{group.Key} was killed for running out of memory ({oom.Count} pods)",
                     oom.Select(p => new Evidence(p.Name, $"OOMKilled, {p.Restarts} restarts")).ToList());
 
-            var unstable = group.Where(p => p.Restarts >= RestartThreshold && p.WaitingReason != "CrashLoopBackOff" && p.LastTerminationReason != "OOMKilled").ToList();
+            var unstable = group.Where(p => p.Restarts >= RestartThreshold && Recent(p) && p.WaitingReason != "CrashLoopBackOff" && p.LastTerminationReason != "OOMKilled").ToList();
             if (unstable.Count > 0)
                 yield return new Condition(new Fingerprint(service, "restarts", group.Key), Severity.Warning,
                     $"{group.Key} keeps restarting",

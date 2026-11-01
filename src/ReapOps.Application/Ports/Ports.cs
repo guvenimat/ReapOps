@@ -9,7 +9,7 @@ public interface IClock
 
 public interface IMetricsReader
 {
-    Task<double?> ScalarAsync(string query, CancellationToken ct);
+    Task<double?> ScalarAsync(string query, DateTime? at, CancellationToken ct);
 }
 
 public interface IClusterReader

@@ -14,6 +14,18 @@ public sealed class MonitoredService
     public string Name { get; set; } = "";
     public string? Namespace { get; set; }
     public List<SloDefinition> Slos { get; set; } = [];
+    public List<AnomalyDefinition> Anomalies { get; set; } = [];
+}
+
+public sealed class AnomalyDefinition
+{
+    public string Name { get; set; } = "";
+    public string Query { get; set; } = "";
+    public string Direction { get; set; } = "both";
+    public double? Threshold { get; set; }
+    public double? MinRelativeChange { get; set; }
+    public int? MinHistory { get; set; }
+    public int SeasonDays { get; set; } = 7;
 }
 
 public sealed class SloDefinition
