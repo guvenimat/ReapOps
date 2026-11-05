@@ -17,16 +17,18 @@ public sealed class OpenAiCompatibleModel : IDiagnosisModel, IDisposable
 
     readonly HttpClient _http;
     readonly string _model;
+    readonly string? _effort;
     readonly ILogger<OpenAiCompatibleModel> _log;
 
     public OpenAiCompatibleModel(IConfiguration cfg, ILogger<OpenAiCompatibleModel> log)
     {
         _log = log;
         _model = cfg["Llm:Model"] ?? "gemini-3.5-flash";
+        _effort = string.IsNullOrWhiteSpace(cfg["Llm:Effort"]) ? null : cfg["Llm:Effort"];
         var baseUrl = cfg["Llm:BaseUrl"]!.TrimEnd('/') + "/";
         _http = new HttpClient { BaseAddress = new Uri(baseUrl), Timeout = TimeSpan.FromSeconds(int.TryParse(cfg["Llm:TimeoutSeconds"], out var s) ? s : 120) };
         _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", cfg["Llm:ApiKey"]);
-        Name = $"{_model} ({_http.BaseAddress.Host})";
+        Name = _effort is null ? $"{_model} ({_http.BaseAddress.Host})" : $"{_model} {_effort} ({_http.BaseAddress.Host})";
     }
 
     public static bool IsEnabled(IConfiguration cfg) => !string.IsNullOrWhiteSpace(cfg["Llm:ApiKey"]) && !string.IsNullOrWhiteSpace(cfg["Llm:BaseUrl"]);
@@ -36,7 +38,7 @@ public sealed class OpenAiCompatibleModel : IDiagnosisModel, IDisposable
 
     public async Task<ModelReply> NextAsync(ModelRequest request, CancellationToken ct)
     {
-        var body = BuildRequest(_model, request).ToJsonString();
+        var body = BuildRequest(_model, request, _effort).ToJsonString();
         for (var attempt = 1; ; attempt++)
         {
             using var content = new StringContent(body, Encoding.UTF8, "application/json");
@@ -54,7 +56,7 @@ public sealed class OpenAiCompatibleModel : IDiagnosisModel, IDisposable
         }
     }
 
-    public static JsonObject BuildRequest(string model, ModelRequest request)
+    public static JsonObject BuildRequest(string model, ModelRequest request, string? effort = null)
     {
         var messages = new JsonArray((JsonNode)new JsonObject { ["role"] = "system", ["content"] = request.System });
         foreach (var turn in request.Transcript)
@@ -83,7 +85,9 @@ public sealed class OpenAiCompatibleModel : IDiagnosisModel, IDisposable
         var tools = new JsonArray();
         foreach (var t in request.Tools) tools.Add((JsonNode)Function(t.Name, t.Description, ToolSchema(t)));
         tools.Add((JsonNode)Function(SubmitTool, "Submit your final diagnosis. Call it exactly once, when you are done investigating.", DiagnosisSchema(request.Actions)));
-        return new JsonObject { ["model"] = model, ["messages"] = messages, ["tools"] = tools, ["tool_choice"] = "auto" };
+        var body = new JsonObject { ["model"] = model, ["messages"] = messages, ["tools"] = tools, ["tool_choice"] = "auto" };
+        if (effort is not null) body["reasoning_effort"] = effort;
+        return body;
     }
 
     static string Arguments(IReadOnlyDictionary<string, string> args)

@@ -77,6 +77,10 @@ spec:
               value: {{ .Values.agent.mode }}
             - name: Llm__Model
               value: {{ .Values.agent.model }}
+            {{- with .Values.agent.effort }}
+            - name: Llm__Effort
+              value: {{ . | quote }}
+            {{- end }}
             - name: Llm__ApiKey
               valueFrom:
                 secretKeyRef:
