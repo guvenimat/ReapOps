@@ -4,7 +4,7 @@ using ReapOps.Domain.Incidents;
 
 namespace ReapOps.Application.Diagnosis;
 
-public sealed record RecordedOutput(string Tool, string Match, string Output);
+public sealed record RecordedOutput(string Tool, string Match, string Output, int MinMinutesAgo = 0);
 
 public sealed record EvalExpectation(IReadOnlyList<string> FirstActions, IReadOnlyList<string> ForbiddenActions, IReadOnlyList<IReadOnlyList<string>> RootCauseTerms);
 
@@ -28,15 +28,17 @@ public sealed class ReplayTool(ToolSpec spec, IReadOnlyList<RecordedOutput> reco
     public Task<string> ExecuteAsync(IReadOnlyDictionary<string, string> arguments, CancellationToken ct)
     {
         var args = string.Join(" ", arguments.OrderBy(a => a.Key, StringComparer.Ordinal).Select(a => a.Value));
-        var output = spec.Name == ListMetricsTool.Definition.Name ? ListMetrics(arguments) : Lookup(args);
+        var ago = arguments.TryGetValue("minutes_ago", out var m) && int.TryParse(m, out var minutes) && minutes > 0 ? minutes : 0;
+        var output = spec.Name == ListMetricsTool.Definition.Name ? ListMetrics(arguments) : Lookup(args, ago);
         trace?.Add($"{spec.Name}({args}) -> {output.Replace('\n', ' ')}");
         return Task.FromResult(output);
     }
 
-    string Lookup(string args)
+    string Lookup(string args, int ago)
     {
-        var hit = recorded.FirstOrDefault(r => r.Tool == spec.Name && args.Contains(r.Match, StringComparison.OrdinalIgnoreCase))
-            ?? recorded.FirstOrDefault(r => r.Tool == spec.Name && r.Match == "*");
+        var candidates = recorded.Where(r => r.Tool == spec.Name && r.MinMinutesAgo <= ago).ToList();
+        var hit = candidates.FirstOrDefault(r => args.Contains(r.Match, StringComparison.OrdinalIgnoreCase))
+            ?? candidates.FirstOrDefault(r => r.Match == "*");
         return hit?.Output ?? "no data";
     }
 
@@ -91,10 +93,23 @@ public sealed class EvaluateDiagnoses(IDiagnosisModel model, IClock clock, Agent
     {
         var first = d.Options.FirstOrDefault()?.ActionId ?? "";
         var firstOk = c.Expect.FirstActions.Count == 0 || c.Expect.FirstActions.Contains(first);
-        var forbiddenOk = !d.Options.Any(o => c.Expect.ForbiddenActions.Contains(o.ActionId));
+        var forbiddenOk = !d.Options.Any(o => c.Expect.ForbiddenActions.Any(f => IsForbidden(f, o)));
         var text = $"{d.Summary} {d.RootCause}";
         var missing = c.Expect.RootCauseTerms.Where(any => !any.Any(t => text.Contains(t, StringComparison.OrdinalIgnoreCase))).ToList();
-        var detail = $"first action '{first}'" + (missing.Count > 0 ? $"; root cause misses: {string.Join(" / ", missing.Select(m => string.Join("|", m)))}" : "");
+        var forbidden = d.Options.Where(o => c.Expect.ForbiddenActions.Any(f => IsForbidden(f, o))).Select(o => o.ActionId).ToList();
+        var detail = $"first action '{first}'"
+            + (forbidden.Count > 0 ? $"; forbidden: {string.Join(", ", forbidden)}" : "")
+            + (missing.Count > 0 ? $"; root cause misses: {string.Join(" / ", missing.Select(m => string.Join("|", m)))}" : "");
         return new EvalScore(c.Name, firstOk, forbiddenOk, missing.Count == 0, d.Evidence.Count > 0, d.Status, d.ToolCalls, d.InputTokens, d.OutputTokens, detail);
+    }
+
+    public static (string Action, string? Workload) ParseForbidden(string rule) =>
+        rule.Split(':', 2) is [var action, var workload] ? (action, workload) : (rule, null);
+
+    static bool IsForbidden(string rule, ProposedOption option)
+    {
+        var (action, workload) = ParseForbidden(rule);
+        if (option.ActionId != action) return false;
+        return workload is null || (option.Parameters.TryGetValue("workload", out var w) && string.Equals(w, workload, StringComparison.OrdinalIgnoreCase));
     }
 }

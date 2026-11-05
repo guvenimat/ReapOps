@@ -204,6 +204,23 @@ public class DiagnoseIncidentTests
     }
 
     [Fact]
+    public async Task Replayed_queries_return_older_values_for_minutes_ago()
+    {
+        List<RecordedOutput> recorded = [new("query_metrics", "requests", "180", MinMinutesAgo: 45), new("query_metrics", "requests", "742")];
+        var tool = new ReplayTool(QueryMetricsTool.Definition, recorded);
+        Assert.Equal("742", await tool.ExecuteAsync(new Dictionary<string, string> { ["query"] = "requests" }, CancellationToken.None));
+        Assert.Equal("742", await tool.ExecuteAsync(new Dictionary<string, string> { ["query"] = "requests", ["minutes_ago"] = "10" }, CancellationToken.None));
+        Assert.Equal("180", await tool.ExecuteAsync(new Dictionary<string, string> { ["query"] = "requests", ["minutes_ago"] = "1440" }, CancellationToken.None));
+    }
+
+    [Fact]
+    public void A_forbidden_rule_can_name_a_workload()
+    {
+        Assert.Equal(("raise_resources", "api"), EvaluateDiagnoses.ParseForbidden("raise_resources:api"));
+        Assert.Equal(("raise_resources", (string?)null), EvaluateDiagnoses.ParseForbidden("raise_resources"));
+    }
+
+    [Fact]
     public void The_eval_set_in_the_repository_loads()
     {
         var dir = AppContext.BaseDirectory;
@@ -213,7 +230,7 @@ public class DiagnoseIncidentTests
         Assert.All(cases, c =>
         {
             Assert.NotEmpty(c.Recorded);
-            Assert.All(c.Expect.FirstActions.Concat(c.Expect.ForbiddenActions), a => Assert.NotNull(ActionCatalog.Find(a)));
+            Assert.All(c.Expect.FirstActions.Concat(c.Expect.ForbiddenActions.Select(f => EvaluateDiagnoses.ParseForbidden(f).Action)), a => Assert.NotNull(ActionCatalog.Find(a)));
         });
     }
 

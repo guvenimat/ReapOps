@@ -8,7 +8,11 @@
     { "label": "worker-7d9f-x2", "value": "OOMKilled, 4 restarts" }
   ],
   "recorded": [
+    { "tool": "query_metrics", "match": "process_memory", "min_minutes_ago": 180, "output": "120000000" },
+    { "tool": "query_metrics", "match": "process_memory", "min_minutes_ago": 60, "output": "185000000" },
     { "tool": "query_metrics", "match": "process_memory", "output": "251000000" },
+    { "tool": "query_metrics", "match": "working_set", "min_minutes_ago": 180, "output": "120000000" },
+    { "tool": "query_metrics", "match": "working_set", "min_minutes_ago": 60, "output": "185000000" },
     { "tool": "query_metrics", "match": "working_set", "output": "251000000" },
     { "tool": "query_metrics", "match": "outbox", "output": "4.2" },
     { "tool": "query_metrics", "match": "http_server_request_duration_seconds_count", "output": "1.0" },
