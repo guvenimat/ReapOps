@@ -192,6 +192,18 @@ public class DiagnoseIncidentTests
     }
 
     [Fact]
+    public async Task Replayed_list_metrics_filters_names_and_unknown_queries_return_no_data()
+    {
+        List<RecordedOutput> recorded = [new("list_metrics", "*", "http_requests_total\norders_paid_total\nprocess_memory_bytes")];
+        var trace = new List<string>();
+        var list = new ReplayTool(ListMetricsTool.Definition, recorded, trace);
+        Assert.Equal("orders_paid_total", await list.ExecuteAsync(new Dictionary<string, string> { ["contains"] = "ORDERS" }, CancellationToken.None));
+        Assert.Equal("no metrics", await list.ExecuteAsync(new Dictionary<string, string> { ["contains"] = "redis" }, CancellationToken.None));
+        Assert.Equal("no data", await new ReplayTool(QueryMetricsTool.Definition, recorded).ExecuteAsync(new Dictionary<string, string> { ["query"] = "orders_paid_total" }, CancellationToken.None));
+        Assert.Equal(2, trace.Count);
+    }
+
+    [Fact]
     public void The_eval_set_in_the_repository_loads()
     {
         var dir = AppContext.BaseDirectory;
