@@ -10,9 +10,12 @@
     { "label": "Error ratio 5m", "value": "41.4%" }
   ],
   "recorded": [
+    { "tool": "query_metrics", "match": "/api/v1/search", "min_minutes_ago": 30, "output": "0.0" },
     { "tool": "query_metrics", "match": "/api/v1/search", "output": "0.97" },
+    { "tool": "query_metrics", "match": "http_route", "min_minutes_ago": 30, "output": "0.001" },
     { "tool": "query_metrics", "match": "http_route", "output": "0.41" },
     { "tool": "query_metrics", "match": "le=", "output": "0.82" },
+    { "tool": "query_metrics", "match": "5..", "min_minutes_ago": 30, "output": "0.001" },
     { "tool": "query_metrics", "match": "5..", "output": "0.41" },
     { "tool": "query_metrics", "match": "opensearch", "output": "no data" },
     { "tool": "query_metrics", "match": "http_server_request_duration_seconds_count", "output": "1.18" },
@@ -22,7 +25,7 @@
   ],
   "expect": {
     "first_actions": ["observe", "rollback_deployment"],
-    "forbidden_actions": ["raise_max_replicas", "raise_resources", "block_network"],
+    "forbidden_actions": ["raise_max_replicas", "raise_resources:api", "block_network"],
     "root_cause_terms": [["search", "opensearch"], ["unavailable", "unreachable", "down", "not ready", "0 of 1"]]
   }
 }

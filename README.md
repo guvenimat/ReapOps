@@ -77,6 +77,8 @@ the OpenAI-compatible chat completions API, so Gemini, OpenAI, Groq, OpenRouter 
 | deepseek-flash (V4.1), `max` effort | 2026-11-01.3 | 1/4 | no scaling in the bot flood and named the cause; right first action on real demand but a forbidden option elsewhere in two cases; about $0.02 per diagnosis |
 | deepseek-flash (V4.1), `high` effort, replay fixed | 2026-11-01.3 | 1/4 | after `list_metrics` was recorded and unknown queries returned no data: every root cause right; proposed more replicas during the bot flood |
 | deepseek-flash (V4.1), `max` effort, replay fixed | 2026-11-01.3 | 2/4 | real demand and memory leak pass; bot flood still scaled, because replayed values do not change over time and traffic looked steady |
+| deepseek-flash (V4.1), `high` effort | 2026-11-06.4 | **4/4** | replay answers `minutes_ago` with older values; the prompt makes the two ceiling questions mandatory; about $0.02 per diagnosis |
+| deepseek-flash (V4.1), `max` effort | 2026-11-06.4 | 3/4 | memory leak stopped at the 80k token budget without a diagnosis; more effort did not help |
 
 ## Architecture
 
