@@ -89,7 +89,8 @@ Detection is deterministic. The LLM never decides whether an incident exists.
    for example 14.4x over 5 min and 1 h (page) or 6x over 30 min and 6 h (ticket).
 2. **Rules.** HPA at `maxReplicas` while an SLO burns; OOMKilled; CrashLoopBackOff; Pending pods that cannot be scheduled; outbox or queue lag.
 3. **Statistical anomalies (second layer).** Per-metric seasonal baselines (same hour of previous weeks), MAD-based scores and change-point
-   detection for slow drifts such as memory leaks. Cold start: no anomaly alerts until a metric has at least 7 days of history.
+   detection for slow drifts such as memory leaks. Cold start: no anomaly alerts until a metric has at least 5 days of history
+   in its seven-day baseline.
 4. **Log templates (second layer).** Logs are clustered into templates (Drain). A new error template, or a template whose rate jumps,
    is a candidate; it becomes an incident only when it correlates with an SLO burn, error traces or a recent deploy.
 
@@ -111,8 +112,10 @@ detected -> diagnosing -> proposed -> approved -> executing -> verifying -> reso
 
 ## 7. Agent
 
-- Model: Claude through the Anthropic API, pinned per release; the model id is stored with every diagnosis.
-- Tools are read-only and allowlisted: `query_metrics`, `search_logs`, `get_trace`, `describe_workload`, `recent_deploys`, `read_file`, `diff_commits`, `business_signals`.
+- Model: any provider behind the provider-neutral `IDiagnosisModel` port ([ADR 0009](adr/0009-provider-neutral-model-port.md)),
+  chosen by the evaluation set and pinned per release; the model id is stored with every diagnosis.
+- Tools are read-only and allowlisted. Implemented: `list_metrics`, `query_metrics`, `workload_status`, `incident_history`.
+  Planned: `search_logs`, `get_trace`, `recent_deploys`, `read_file`, `diff_commits`, `business_signals`.
 - **Untrusted input.** Logs, traces and code are data, never instructions. Tool output is wrapped and labelled; the system prompt says so,
   and the policy engine ignores anything the agent proposes outside the catalog.
 - **Redaction.** Secrets, tokens, emails and phone numbers are masked before they reach the model.
