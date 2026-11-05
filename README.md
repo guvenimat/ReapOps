@@ -80,10 +80,10 @@ Clean Architecture ([ADR 0008](docs/adr/0008-clean-architecture.md)), enforced b
 
 | Project | Contains |
 |---|---|
-| `ReapOps.Domain` | `Incident` aggregate and its state machine, `Slo` and `BurnRatePolicy`, `WorkloadRules`, `NoisePolicy`; no packages |
-| `ReapOps.Application` | Use cases (`DetectIncidents`, `AcknowledgeIncident`, `ResolveIncident`), queries, and ports: `IMetricsReader`, `IClusterReader`, `IIncidentReader`, `IIncidentStore`, `INotifier`, `IClock` |
-| `ReapOps.Infrastructure` | Adapters: Prometheus and Kubernetes API (plain `HttpClient`, Native AOT friendly), PostgreSQL with Dapper.AOT, SMTP |
-| `ReapOps.Worker` | Detection loop and migrations |
+| `ReapOps.Domain` | `Incident` aggregate and its state machine, `Slo` and `BurnRatePolicy`, `WorkloadRules`, `NoisePolicy`, `AnomalyDetector`, `ActionCatalog`, `DiagnosisPolicy`, `Redactor`; no packages |
+| `ReapOps.Application` | Use cases (`DetectIncidents`, `DiagnoseIncident`, `AcknowledgeIncident`, `ResolveIncident`), the agent tools and evaluation, queries, and ports: `IMetricsReader`, `IClusterReader`, `IIncidentReader`, `IIncidentStore`, `IDiagnosisModel`, `IDiagnosisReader`, `IDiagnosisStore`, `INotifier`, `IClock` |
+| `ReapOps.Infrastructure` | Adapters: Prometheus and Kubernetes API (plain `HttpClient`, Native AOT friendly), PostgreSQL with Dapper.AOT, SMTP, the OpenAI-compatible model client |
+| `ReapOps.Worker` | Detection and diagnosis loops, migrations, and the `eval` command |
 | `ReapOps.Api` | Console API and the React console (`web/`) as static files |
 
 Both hosts are published with Native AOT. Read and write ports are separate interfaces; the detection namespace cannot reference adapters.
