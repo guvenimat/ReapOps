@@ -15,7 +15,8 @@
     { "tool": "query_metrics", "match": "le=", "output": "0.82" },
     { "tool": "query_metrics", "match": "5..", "output": "0.41" },
     { "tool": "query_metrics", "match": "opensearch", "output": "no data" },
-    { "tool": "query_metrics", "match": "*", "output": "1.18" },
+    { "tool": "query_metrics", "match": "http_server_request_duration_seconds_count", "output": "1.18" },
+    { "tool": "list_metrics", "match": "*", "output": "http_server_request_duration_seconds_bucket\nhttp_server_request_duration_seconds_count\nhttp_server_request_duration_seconds_sum\nhttp_server_active_requests\nreapseek_orders_placed_total\nreapseek_orders_paid_total\nreapseek_orders_revenue_total\nreapseek_payments_failed_total\nreapseek_outbox_processed_total\nreapseek_outbox_delay_seconds\ndb_client_connections_usage\ndb_client_operation_duration_seconds_bucket\ndb_client_operation_duration_seconds_count\nprocess_memory_usage_bytes\ncontainer_memory_working_set_bytes\ncontainer_cpu_usage_seconds_total\nup" },
     { "tool": "workload_status", "match": "*", "output": "autoscaler api: 4 replicas (min 4, max 8, desired 4)\npod api-1 (api): restarts 0, waiting -, last exit - at -\npod opensearch-0 (opensearch): restarts 0, waiting -, last exit - at -\nnote: the statefulset opensearch has 0 of 1 replicas ready" },
     { "tool": "incident_history", "match": "*", "output": "2026-11-01 11:35:42Z warning resolved: Cannot read metrics for reapseek-api" }
   ],

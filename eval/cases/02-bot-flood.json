@@ -15,9 +15,10 @@
     { "tool": "query_metrics", "match": "auth/login", "output": "412.0" },
     { "tool": "query_metrics", "match": "search", "output": "301.0" },
     { "tool": "query_metrics", "match": "5..", "output": "0.004" },
-    { "tool": "query_metrics", "match": "db_client", "output": "0.012" },
     { "tool": "query_metrics", "match": "connection", "output": "3" },
-    { "tool": "query_metrics", "match": "*", "output": "742.0" },
+    { "tool": "query_metrics", "match": "db_client", "output": "0.012" },
+    { "tool": "query_metrics", "match": "http_server_request_duration_seconds_count", "output": "742.0" },
+    { "tool": "list_metrics", "match": "*", "output": "http_server_request_duration_seconds_bucket\nhttp_server_request_duration_seconds_count\nhttp_server_request_duration_seconds_sum\nhttp_server_active_requests\nreapseek_orders_placed_total\nreapseek_orders_paid_total\nreapseek_orders_revenue_total\nreapseek_payments_failed_total\nreapseek_outbox_processed_total\nreapseek_outbox_delay_seconds\ndb_client_connections_usage\ndb_client_operation_duration_seconds_bucket\ndb_client_operation_duration_seconds_count\nprocess_memory_usage_bytes\ncontainer_memory_working_set_bytes\ncontainer_cpu_usage_seconds_total\nup" },
     { "tool": "workload_status", "match": "*", "output": "autoscaler api: 8 replicas (min 4, max 8, desired 11)\npod api-1 (api): restarts 0, waiting -, last exit - at -\npod postgres-0 (postgres): restarts 0, waiting -, last exit - at -" },
     { "tool": "incident_history", "match": "*", "output": "no incidents" }
   ],

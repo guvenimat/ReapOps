@@ -41,8 +41,19 @@ if (args is ["eval", var directory, ..])
         return;
     }
     var report = await app.Services.GetRequiredService<EvaluateDiagnoses>().RunAsync(EvalCases.Load(directory), CancellationToken.None);
+    var verbose = args.Contains("--verbose");
     foreach (var s in report.Scores)
+    {
         Console.WriteLine($"{(s.Passed ? "PASS" : "FAIL")}  {s.Case}: action {s.FirstAction}, no forbidden {s.AvoidedForbidden}, root cause {s.RootCause}, grounded {s.Grounded}, {s.Status}, {s.ToolCalls} calls, {s.InputTokens}+{s.OutputTokens} tokens; {s.Detail}");
+        if (!verbose) continue;
+        foreach (var t in s.Trace ?? []) Console.WriteLine($"    tool  {t}");
+        if (s.Diagnosis is not { } d) continue;
+        Console.WriteLine($"    summary     {d.Summary}");
+        Console.WriteLine($"    root cause  {d.RootCause} (confidence {d.Confidence})");
+        foreach (var o in d.Options) Console.WriteLine($"    option      {o.ActionId} {string.Join(", ", o.Parameters.Select(p => $"{p.Key}={p.Value}"))}: {o.Rationale}");
+        foreach (var a in d.Alternatives) Console.WriteLine($"    ruled out   {a.Hypothesis}: {a.Why}");
+        foreach (var n in d.Notes) Console.WriteLine($"    note        {n}");
+    }
     Console.WriteLine($"{report.Passed}/{report.Scores.Count} passed ({report.Model}, prompt {report.PromptVersion})");
     Environment.ExitCode = report.Passed == report.Scores.Count ? 0 : 1;
     return;
